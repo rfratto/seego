@@ -10,6 +10,7 @@ RUN  dpkg --add-architecture amd64    \
   && dpkg --add-architecture mipsel   \
   && dpkg --add-architecture powerpc  \
   && dpkg --add-architecture ppc64el  \
+  && dpkg --add-architecture s390x    \
   && apt-get update                   \
   && apt-get install -yq              \
         autoconf                      \
@@ -31,14 +32,17 @@ RUN  dpkg --add-architecture amd64    \
         crossbuild-essential-ppc64el  \
         curl                          \
         devscripts                    \
+        dpkg-cross                    \
         gdb                           \
         git                           \
         git-core                      \
         gnupg                         \
+        libc6-dev                     \
         libsnmp-dev                   \
         libssl-dev                    \
         libtool                       \
         libxml2-dev                   \
+        linux-libc-dev                \
         llvm                          \
         lzma-dev                      \
         make                          \
@@ -50,9 +54,14 @@ RUN  dpkg --add-architecture amd64    \
         qemu-user-static              \
         software-properties-common    \
         subversion                    \
+        sudo                          \
         wget                          \
         xz-utils                      \
   && apt-get clean
+
+#
+# OSX
+#
 
 ARG OSXCROSS_SDK_URL
 ENV OSXCROSS_PATH=/usr/osxcross \
@@ -68,7 +77,10 @@ RUN  mkdir -p /tmp/osxcross && cd /tmp/osxcross                                 
   && rm -rf /tmp/osxcross "/usr/osxcross/SDK/MacOSX${SDK_VERSION}.sdk/usr/share/man"
 
 ENV PATH $OSXCROSS_PATH/bin:$PATH
-ENV LD_LIBRARY_PATH $OSXCROSS_PATH/lib:$LD_LIBRARY_PATH
+
+#
+# Go
+#
 
 ENV GOLANG_VERSION 1.14.4
 ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go$GOLANG_VERSION.linux-amd64.tar.gz
@@ -83,6 +95,27 @@ ENV GOPATH /go
 ENV PATH $GOPATH:/bin:/usr/local/go/bin:$PATH
 
 RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
+
+#
+# FreeBSD
+#
+
+COPY assets/freebsd-amd64-11.3.tar.xz /usr/freebsd/freebsd-amd64.tar.xz
+COPY assets/freebsd-i386-11.3.tar.xz /usr/freebsd/freebsd-i386.tar.xz
+
+RUN  mkdir /usr/freebsd/x86_64-pc-freebsd11 \
+  && cd /usr/freebsd/x86_64-pc-freebsd11 \
+  && tar -xf /usr/freebsd/freebsd-amd64.tar.xz ./lib ./usr/lib ./usr/include \
+  && rm /usr/freebsd/freebsd-amd64.tar.xz \
+  \
+  && mkdir /usr/freebsd/i386-pc-freebsd11 \
+  && cd /usr/freebsd/i386-pc-freebsd11 \
+  && tar -xf /usr/freebsd/freebsd-i386.tar.xz ./lib ./usr/lib ./usr/include \
+  && rm /usr/freebsd/freebsd-i386.tar.xz
+
+#
+# Final
+#
 WORKDIR $GOPATH
 
 COPY rootfs/go_wrapper.sh /

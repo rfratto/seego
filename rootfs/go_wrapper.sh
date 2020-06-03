@@ -2,7 +2,11 @@
 
 FOUND_CC=""
 FOUND_CXX=""
+FOUND_LD_PATH=""
+CC_EXTRA=""
+CXX_EXTRA=""
 
+CGO_ENABLED=${CGO_ENABLED:-$(go env CGO_ENABLED)}
 GOARCH=$(go env GOARCH)
 GOOS=$(go env GOOS)
 GOARM=$(go env GOARM)
@@ -13,8 +17,7 @@ main() {
   case "$GOOS" in
     linux)   configure_linux   ;;
     darwin)  configure_darwin  ;;
-    freebsd) conigure_bsd      ;;
-    netbsd)  configure_bsd     ;;
+    freebsd) configure_bsd     ;;
     windows) configure_windows ;;
     *)
       echo ">>> ERROR: unsupported GOOS value $GOOS"
@@ -23,9 +26,45 @@ main() {
 
   echo ">>> discovered CC ${FOUND_CC}"
   echo ">>> discovered CXX ${FOUND_CXX}"
+  echo ">>> extra C flags: ${CC_EXTRA}"
 
-  echo ">>> CGO_ENABLED=1 CC=$FOUND_CC CXX=$FOUND_CXX go $@"
-  CGO_ENABLED=1 CC=$FOUND_CC CXX=${FOUND_CXX} go "$@"
+  echo ">>> CGO_ENABLED=${CGO_ENABLED} CC=$FOUND_CC CXX=$FOUND_CXX go $@"
+
+  # If we run go directly, any files created on the bind mount
+  # will have awkward ownership.  So we switch to a user with the
+  # same user and group IDs as source directory.  We have to set a
+  # few things up so that sudo works without complaining later on.
+  uid=$(stat --format="%u" $(pwd))
+  gid=$(stat --format="%g" $(pwd))
+  echo "goop:x:$uid:$gid::$(pwd):/bin/bash" >>/etc/passwd
+  echo "goop:*:::::::" >>/etc/shadow
+  echo "goop  ALL=(ALL) NOPASSWD: ALL" >>/etc/sudoers
+
+  # I'm skeptical that this is the best way to do it because it's so
+  # annoying, but it works at least.
+  #
+  # Export environment variables we want to retain when running go
+  # as the new user. Even though we preserve the path, we have to use
+  # the full path to go since sudo won't read the PATH for it.
+
+  export CC="$FOUND_CC $CC_EXTRA"
+  export CXX="$FOUND_CXX $CC_EXTRA"
+
+  export CGO_CFLAGS=$CC_EXTRA
+  export CGO_CXX_CFLAGS=$CC_EXTRA
+  export CGO_LDFLAGS=$CC_EXTRA
+
+  export PATH=$PATH
+  if [ ! -z "$FOUND_LD_PATH" ]; then
+    export LD_LIBRARY_PATH="$FOUND_LD_PATH:$LD_LIBRARY_PATH"
+  fi
+
+  export GOCACHE=$(pwd)/.cache
+
+  sudo -E \
+    --preserve-env=PATH \
+    --preserve-env=LD_LIBRARY_PATH \
+    -u goop -- $(which go) "$@"
 }
 
 configure_linux() {
@@ -56,8 +95,8 @@ configure_linux() {
     toolchain_prefix="arm-linux-gnueabihf-"
   fi
 
-  FOUND_CC="${toolchain_prefix}-gcc"
-  FOUND_CXX="${toolchain_prefix}-g++"
+  FOUND_CC="${toolchain_prefix}gcc"
+  FOUND_CXX="${toolchain_prefix}g++"
 }
 
 configure_darwin() {
@@ -65,6 +104,7 @@ configure_darwin() {
     amd64)
       FOUND_CC="x86_64-apple-darwin19-clang"
       FOUND_CXX="x86_64-apple-darwin19-clang++"
+      FOUND_LD_PATH="$OSXCROSS_PATH/lib"
       ;;
     *)
       echo ">>> ERROR: unsupported darwin GOARCH value $GOARCH"
@@ -74,27 +114,23 @@ configure_darwin() {
 }
 
 configure_bsd() {
-  toolchain_prefix=""
-
   case "$GOARCH" in
-    # Do nothing for native archs
-    amd64 | 386) ;;
-
-    arm)   toolchain_prefix="arm-linux-gnueabi-" ;;
-    arm64) toolchain_prefix="aarch64-linux-gnu-" ;;
+    amd64)
+      FOUND_CC="clang"
+      FOUND_CXX="clang++"
+      CC_EXTRA="-target x86_64-pc-freebsd11 --sysroot=/usr/freebsd/x86_64-pc-freebsd11"
+      ;;
+    386)
+      FOUND_CC="clang"
+      FOUND_CXX="clang++"
+      CC_EXTRA="-target i386-pc-freebsd11 --sysroot=/usr/freebsd/i386-pc-freebsd11 -v"
+      ;;
 
     *)
       echo ">>> ERROR: unsupported bsd GOARCH value $GOARCH"
-      echo ">>> supported values: amd64, 386, arm, arm64"
+      echo ">>> supported values: amd64, 386"
       exit 1
   esac
-
-  if [ "$GOARCH" == "arm" ] && [ "$GOARM" == "7" ]; then
-    toolchain_prefix="arm-linux-gnueabihf-"
-  fi
-
-  FOUND_CC="${toolchain_prefix}-gcc"
-  FOUND_CXX="${toolchain_prefix}-g++"
 }
 
 configure_windows() {
