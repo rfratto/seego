@@ -1,3 +1,42 @@
+FROM debian:stable as osxcross
+
+RUN \
+    dpkg --add-architecture i386 \
+    && apt-get update && apt-get install -y --no-install-recommends \
+        clang \
+        g++ \
+        gcc \
+        gcc-multilib \
+        libc6-dev \
+        libc6-dev-i386 \
+        linux-libc-dev:i386 \
+        mingw-w64 \
+        patch \
+        xz-utils \
+        build-essential \
+        ca-certificates \
+        curl \
+        git \
+        bzr \
+        gnupg \
+        libsnmp-dev \
+        make \
+        cmake \
+        libxml2-dev                   \
+    && rm -rf /var/lib/apt/lists/*
+
+ARG OSXCROSS_SDK_URL
+ENV OSXCROSS_PATH=/usr/osxcross \
+    OSXCROSS_REV=748108aec4e3ceb672990df8164a11b0ac6084f7 \
+    SDK_VERSION=10.15
+RUN  mkdir -p /tmp/osxcross && cd /tmp/osxcross                                           \
+  && curl -sSL "https://codeload.github.com/tpoechtrager/osxcross/tar.gz/${OSXCROSS_REV}" \
+      | tar -C /tmp/osxcross --strip=1 -xzf -                                             \
+  && curl -sSLo tarballs/MacOSX${SDK_VERSION}.sdk.tar.xz ${OSXCROSS_SDK_URL}              \
+  && UNATTENDED=yes ./build.sh                                                            \
+  && mv target "${OSXCROSS_PATH}"                                                         \
+  && rm -rf /tmp/osxcross "/usr/osxcross/SDK/MacOSX${SDK_VERSION}.sdk/usr/share/man"
+
 FROM debian:stable
 MAINTAINER Robert Fratto <robertfratto@gmail.com> (https://github.com/rfratto)
 
@@ -63,19 +102,7 @@ RUN  dpkg --add-architecture amd64    \
 # OSX
 #
 
-ARG OSXCROSS_SDK_URL
-ENV OSXCROSS_PATH=/usr/osxcross \
-    OSXCROSS_REV=748108aec4e3ceb672990df8164a11b0ac6084f7 \
-    SDK_VERSION=10.15
-
-RUN  mkdir -p /tmp/osxcross && cd /tmp/osxcross                                           \
-  && curl -sSL "https://codeload.github.com/tpoechtrager/osxcross/tar.gz/${OSXCROSS_REV}" \
-      | tar -C /tmp/osxcross --strip=1 -xzf -                                             \
-  && curl -sSLo tarballs/MacOSX${SDK_VERSION}.sdk.tar.xz ${OSXCROSS_SDK_URL}              \
-  && UNATTENDED=yes ./build.sh                                                            \
-  && mv target "${OSXCROSS_PATH}"                                                         \
-  && rm -rf /tmp/osxcross "/usr/osxcross/SDK/MacOSX${SDK_VERSION}.sdk/usr/share/man"
-
+COPY --from=osxcross /usr/osxcross /usr/osxcross
 ENV PATH $OSXCROSS_PATH/bin:$PATH
 
 #
