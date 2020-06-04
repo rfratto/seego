@@ -3,27 +3,27 @@ FROM debian:stable as osxcross
 RUN \
     dpkg --add-architecture i386 \
     && apt-get update && apt-get install -y --no-install-recommends \
-        clang \
-        g++ \
-        gcc \
-        gcc-multilib \
-        libc6-dev \
-        libc6-dev-i386 \
+        build-essential     \
+        bzr                 \
+        ca-certificates     \
+        clang               \
+        cmake               \
+        curl                \
+        g++                 \
+        gcc                 \
+        gcc-multilib        \
+        git                 \
+        gnupg               \
+        libc6-dev           \
+        libc6-dev-i386      \
+        libsnmp-dev         \
+        libxml2-dev         \
         linux-libc-dev:i386 \
-        mingw-w64 \
-        patch \
-        xz-utils \
-        build-essential \
-        ca-certificates \
-        curl \
-        git \
-        bzr \
-        gnupg \
-        libsnmp-dev \
-        make \
-        cmake \
-        libxml2-dev                   \
-    && rm -rf /var/lib/apt/lists/*
+        make                \
+        mingw-w64           \
+        patch               \
+        xz-utils            \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ARG OSXCROSS_SDK_URL
 ENV OSXCROSS_PATH=/usr/osxcross \
@@ -52,17 +52,12 @@ RUN  dpkg --add-architecture amd64    \
   && dpkg --add-architecture s390x    \
   && apt-get update                   \
   && apt-get install -yq              \
-        autoconf                      \
-        automake                      \
-        autotools-dev                 \
-        bc                            \
         binfmt-support                \
         binutils-multiarch            \
         binutils-multiarch-dev        \
         build-essential               \
         bzr                           \
         clang                         \
-        cmake                         \
         crossbuild-essential-arm64    \
         crossbuild-essential-armel    \
         crossbuild-essential-armhf    \
@@ -70,24 +65,12 @@ RUN  dpkg --add-architecture amd64    \
         crossbuild-essential-powerpc  \
         crossbuild-essential-ppc64el  \
         curl                          \
-        devscripts                    \
-        dpkg-cross                    \
-        gdb                           \
         git                           \
         git-core                      \
-        gnupg                         \
-        libc6-dev                     \
-        libsnmp-dev                   \
         libssl-dev                    \
-        libtool                       \
-        libxml2-dev                   \
-        linux-libc-dev                \
         llvm                          \
-        lzma-dev                      \
-        make                          \
         mercurial                     \
         mingw-w64                     \
-        multistrap                    \
         openssl                       \
         patch                         \
         qemu-user-static              \
@@ -96,13 +79,14 @@ RUN  dpkg --add-architecture amd64    \
         sudo                          \
         wget                          \
         xz-utils                      \
-  && apt-get clean
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 #
 # OSX
 #
 
-COPY --from=osxcross /usr/osxcross /usr/osxcross
+ENV OSXCROSS_PATH=/usr/osxcross
+COPY --from=osxcross $OSXCROSS_PATH $OSXCROSS_PATH
 ENV PATH $OSXCROSS_PATH/bin:$PATH
 
 #
