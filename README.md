@@ -1,12 +1,12 @@
-# goop: GO, but Omg let me just use cgo, Please
+# seego
 
-`goop` is a multiarch Docker build environment image that wraps around `go` to
+`seego` is a multiarch Docker build environment image that wraps around `go` to
 enable easier crosscompilation of packages that require `CGO_ENABLED=1`.
 
 ## Usage
 
 ```bash
-docker run --rm -v $(pwd):$(pwd) -w $(pwd) rfratto/goop <arguments to go>
+docker run --rm -v $(pwd):$(pwd) -w $(pwd) rfratto/seego <arguments to go>
 ```
 
 To compile for different platforms, specify values for `GOOS`, `GOARCH` and
@@ -15,7 +15,7 @@ To compile for different platforms, specify values for `GOOS`, `GOARCH` and
 For example:
 
 ```bash
-docker run -e GOOS=darwin -e GOARCH=amd64 --rm -v $(pwd):$(pwd) -w $(pwd) rfratto/goop build github.com/grafana/agent/cmd/agent
+docker run -e GOOS=darwin -e GOARCH=amd64 --rm -v $(pwd):$(pwd) -w $(pwd) rfratto/seego build github.com/grafana/agent/cmd/agent
 ```
 
 ## Supported platforms

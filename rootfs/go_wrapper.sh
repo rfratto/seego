@@ -36,9 +36,9 @@ main() {
   # few things up so that sudo works without complaining later on.
   uid=$(stat --format="%u" $(pwd))
   gid=$(stat --format="%g" $(pwd))
-  echo "goop:x:$uid:$gid::$(pwd):/bin/bash" >>/etc/passwd
-  echo "goop:*:::::::" >>/etc/shadow
-  echo "goop  ALL=(ALL) NOPASSWD: ALL" >>/etc/sudoers
+  echo "seego:x:$uid:$gid::$(pwd):/bin/bash" >>/etc/passwd
+  echo "seego:*:::::::" >>/etc/shadow
+  echo "seego  ALL=(ALL) NOPASSWD: ALL" >>/etc/sudoers
 
   # I'm skeptical that this is the best way to do it because it's so
   # annoying, but it works at least.
@@ -64,7 +64,7 @@ main() {
   sudo -E \
     --preserve-env=PATH \
     --preserve-env=LD_LIBRARY_PATH \
-    -u goop -- $(which go) "$@"
+    -u seego -- $(which go) "$@"
 }
 
 configure_linux() {

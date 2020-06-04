@@ -1,4 +1,4 @@
-REPOSITORY ?= rfratto/goop
+REPOSITORY ?= rfratto/seego
 
 all: build
 
