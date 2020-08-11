@@ -68,6 +68,7 @@ RUN  dpkg --add-architecture amd64    \
         git                           \
         git-core                      \
         libssl-dev                    \
+        libsystemd-dev                \
         llvm                          \
         mercurial                     \
         mingw-w64                     \
