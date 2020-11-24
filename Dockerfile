@@ -1,4 +1,4 @@
-FROM debian:stable as osxcross
+FROM debian:buster as osxcross
 
 RUN \
     dpkg --add-architecture i386 \
@@ -37,7 +37,7 @@ RUN  mkdir -p /tmp/osxcross && cd /tmp/osxcross                                 
   && mv target "${OSXCROSS_PATH}"                                                         \
   && rm -rf /tmp/osxcross "/usr/osxcross/SDK/MacOSX${SDK_VERSION}.sdk/usr/share/man"
 
-FROM debian:stable
+FROM debian:buster
 MAINTAINER Robert Fratto <robertfratto@gmail.com> (https://github.com/rfratto)
 
 RUN  dpkg --add-architecture amd64    \
@@ -68,7 +68,6 @@ RUN  dpkg --add-architecture amd64    \
         git                           \
         git-core                      \
         libssl-dev                    \
-        libsystemd-dev                \
         llvm                          \
         mercurial                     \
         mingw-w64                     \
@@ -80,6 +79,12 @@ RUN  dpkg --add-architecture amd64    \
         sudo                          \
         wget                          \
         xz-utils                      \
+  && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Backports repo required to get a libsystemd version 246 or newer which is required to handle journal +ZSTD compression
+RUN echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list
+RUN  apt-get update \
+  && apt-get install -t buster-backports -qy libsystemd-dev \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 #
