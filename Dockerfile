@@ -64,6 +64,7 @@ RUN  dpkg --add-architecture amd64    \
         crossbuild-essential-mipsel   \
         crossbuild-essential-powerpc  \
         crossbuild-essential-ppc64el  \
+        crossbuild-essential-s390x    \
         curl                          \
         git                           \
         git-core                      \
