@@ -74,20 +74,22 @@ configure_linux() {
     # Do nothing for native archs
     amd64 | 386) ;;
 
-    arm)   toolchain_prefix="arm-linux-gnueabi-" ;;
-    arm64) toolchain_prefix="aarch64-linux-gnu-" ;;
+    arm)      toolchain_prefix="arm-linux-gnueabi-" ;;
+    arm64)    toolchain_prefix="aarch64-linux-gnu-" ;;
 
-    ppc64)   toolchain_prefix="powerpc-linux-gnu-"     ;;
-    ppc64le) toolchain_prefix="powerpc64le-linux-gnu-" ;;
+    ppc64)    toolchain_prefix="powerpc-linux-gnu-"     ;;
+    ppc64le)  toolchain_prefix="powerpc64le-linux-gnu-" ;;
 
-    mips)    toolchain_prefix="mips-linux-gnu-"          ;;
-    mipsle)  toolchain_prefix="mipsel-linux-gnu-"        ;;
-    mips64)  toolchain_prefix="mips64-linux-gnuabi64-"   ;;
+    mips)     toolchain_prefix="mips-linux-gnu-"          ;;
+    mipsle)   toolchain_prefix="mipsel-linux-gnu-"        ;;
+    mips64)   toolchain_prefix="mips64-linux-gnuabi64-"   ;;
     mips64le) toolchain_prefix="mips64el-linux-gnuabi64-" ;;
+
+    s390x)    toolchain_prefix="s390x-linux-gnu-" ;;
 
     *)
       echo ">>> ERROR: unsupported linux GOARCH value $GOARCH"
-      echo ">>> supported values: amd64, 386, arm, arm64, ppc64, ppc64le, mips, mipsle, mips64, mips64le"
+      echo ">>> supported values: amd64, 386, arm, arm64, ppc64, ppc64le, mips, mipsle, mips64, mips64le, s390x"
       exit 1
   esac
 
