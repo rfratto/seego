@@ -27,7 +27,7 @@ docker run -e GOOS=darwin -e GOARCH=amd64 --rm -v $(pwd):$(pwd) -w $(pwd) rfratt
 | armv5    |     x |        |         |         |
 | armv6    |     x |        |         |         |
 | armv7    |     x |        |         |         |
-| arm64    |     x |        |         |         |
+| arm64    |     x |      x |         |         |
 | ppc64    |     x |        |         |         |
 | ppc64le  |     x |        |         |         |
 | mips     |     x |        |         |         |

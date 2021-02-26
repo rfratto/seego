@@ -61,7 +61,7 @@ main() {
 
   export GOCACHE=$(pwd)/.cache
 
-  sudo -E \
+  exec sudo -E \
     --preserve-env=PATH \
     --preserve-env=LD_LIBRARY_PATH \
     -u seego -- $(which go) "$@"
@@ -104,13 +104,18 @@ configure_linux() {
 configure_darwin() {
   case "$GOARCH" in
     amd64)
-      FOUND_CC="x86_64-apple-darwin19-clang"
-      FOUND_CXX="x86_64-apple-darwin19-clang++"
+      FOUND_CC="x86_64-apple-darwin20.2-clang"
+      FOUND_CXX="x86_64-apple-darwin20.2-clang++"
+      FOUND_LD_PATH="$OSXCROSS_PATH/lib"
+      ;;
+    arm64)
+      FOUND_CC="arm64-apple-darwin20.2-clang"
+      FOUND_CXX="arm64-apple-darwin20.2-clang++"
       FOUND_LD_PATH="$OSXCROSS_PATH/lib"
       ;;
     *)
       echo ">>> ERROR: unsupported darwin GOARCH value $GOARCH"
-      echo ">>> supported values: amd64"
+      echo ">>> supported values: amd64, arm64"
       exit 1
   esac
 }
