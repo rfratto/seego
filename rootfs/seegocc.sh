@@ -26,7 +26,7 @@ main() {
   if [ ! -z "$FOUND_LD_PATH" ]; then
     export LD_LIBRARY_PATH="$FOUND_LD_PATH:$LD_LIBRARY_PATH"
   fi
-  exec "$FOUND_CC" "$CC_EXTRA" "$@"
+  exec $FOUND_CC $CC_EXTRA "$@"
 }
 
 configure_linux() {
