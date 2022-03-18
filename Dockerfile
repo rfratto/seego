@@ -137,5 +137,6 @@ RUN  mkdir /usr/freebsd/x86_64-pc-freebsd11 \
 WORKDIR $GOPATH
 
 COPY rootfs/go_wrapper.sh /
-RUN chmod +x /go_wrapper.sh
+COPY rootfs/seegocc.sh /bin/seegocc
+RUN chmod +x /go_wrapper.sh && chmod +x /bin/seegocc
 ENTRYPOINT ["/go_wrapper.sh"]
