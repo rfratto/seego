@@ -1,4 +1,4 @@
-FROM debian:buster as osxcross
+FROM debian:bullseye as osxcross
 
 RUN \
     dpkg --add-architecture i386 \
@@ -37,7 +37,7 @@ RUN  mkdir -p /tmp/osxcross && cd /tmp/osxcross                                 
   && mv target "${OSXCROSS_PATH}"                                                         \
   && rm -rf /tmp/osxcross "/usr/osxcross/SDK/MacOSX${SDK_VERSION}.sdk/usr/share/man"
 
-FROM debian:buster
+FROM debian:bullseye-slim
 MAINTAINER Robert Fratto <robertfratto@gmail.com> (https://github.com/rfratto)
 
 RUN  dpkg --add-architecture amd64    \
@@ -83,9 +83,9 @@ RUN  dpkg --add-architecture amd64    \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Backports repo required to get a libsystemd version 246 or newer which is required to handle journal +ZSTD compression
-RUN echo "deb http://deb.debian.org/debian buster-backports main" >> /etc/apt/sources.list
+RUN echo "deb http://deb.debian.org/debian bullseye-backports main" >> /etc/apt/sources.list
 RUN  apt-get update \
-  && apt-get install -t buster-backports -qy libsystemd-dev \
+  && apt-get install -t bullseye-backports -qy libsystemd-dev \
   && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 #
@@ -100,9 +100,9 @@ ENV PATH $OSXCROSS_PATH/bin:$PATH
 # Go
 #
 
-ENV GOLANG_VERSION 1.16
+ENV GOLANG_VERSION 1.18
 ENV GOLANG_DOWNLOAD_URL https://golang.org/dl/go$GOLANG_VERSION.linux-amd64.tar.gz
-ENV GOLANG_DOWNLOAD_SHA256 013a489ebb3e24ef3d915abe5b94c3286c070dfe0818d5bca8108f1d6e8440d2
+ENV GOLANG_DOWNLOAD_SHA256 e85278e98f57cdb150fe8409e6e5df5343ecb13cebf03a5d5ff12bd55a80264f
 
 RUN  curl -fsSL "$GOLANG_DOWNLOAD_URL" -o golang.tar.gz             \
   && echo "$GOLANG_DOWNLOAD_SHA256  golang.tar.gz" | sha256sum -c - \
