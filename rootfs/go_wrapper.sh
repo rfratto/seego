@@ -59,8 +59,6 @@ main() {
     export LD_LIBRARY_PATH="$FOUND_LD_PATH:$LD_LIBRARY_PATH"
   fi
 
-  export GOCACHE=$(pwd)/.cache
-
   exec sudo -E \
     --preserve-env=PATH \
     --preserve-env=LD_LIBRARY_PATH \
