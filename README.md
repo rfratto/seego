@@ -1,5 +1,9 @@
 # seego
 
+> **DEPRECATED**: This project is deprecated in favor of
+> [Viceroy](https://github.com/rfratto/viceroy), which also provides C cross
+> compilers through a more generic mechanism.
+
 `seego` is a multiarch Docker build environment image that wraps around `go` to
 enable easier crosscompilation of packages that require `CGO_ENABLED=1`.
 
